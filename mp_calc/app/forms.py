@@ -26,6 +26,12 @@ class CreateQuestionForm(FlaskForm):
 	assign_to = SelectMultipleField('Send To', validators=[DataRequired()])
 	submit = SubmitField('Submit')
 
+class CreatePredictionForm(FlaskForm):
+	fertiliser = StringField('Fertiliser Price', validators=[DataRequired()])
+	crude_oil = StringField('Crude Oil Price', validators=[DataRequired()])
+	industrial_input = StringField('Industrial Input Price', validators=[DataRequired()])
+	submit = SubmitField('Submit')
+
 
 class ChallengeAnswerForm(FlaskForm):
 	challenge_id = HiddenField('Challenge ID')

@@ -43,6 +43,7 @@ class Question(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	expression = db.Column(db.String(255))
 	answer = db.Column(db.Integer)
+	time = db.Column(db.String(255))
 
 	author = db.Column(db.Integer, db.ForeignKey('user.id'))
 	challenge = db.relationship("Challenge", uselist=False, back_populates="question")

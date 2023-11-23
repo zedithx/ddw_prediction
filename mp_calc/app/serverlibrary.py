@@ -177,3 +177,26 @@ def get_smallest_three(challenge):
     times = [r for r in records]
     mergesort(times, lambda x: x.elapsed_time)
     return times[:3]
+def prepare_feature(df_feature):
+    array_size = df_feature.shape[0]
+    if isinstance(df_feature, pd.DataFrame):
+        df_feature = np.array(df_feature)
+    df_feature = df_feature.reshape(array_size, df_feature.shape[1])
+    # column vector of 1s
+    constant_vector = np.ones((array_size, 1))
+    df_feature = np.concatenate((constant_vector, df_feature), 1)
+    return df_feature
+def normalize_z(variable_list: list, column_means, column_stds):
+    res = []
+    for item1, item2, item3 in zip(variable_list, column_means, column_stds):
+        item = (item1 - item2) / item3
+        res.append(item)
+    return res
+def get_predicted_value(var1, var2, var3):
+    beta = [415.173533, 0.395997198, 32.3521125, 1.54418376, 10.9100142]
+    column_means = [124.647460, 133.865238, 154.913651, 25828.950956]
+    column_stds = [28.565058, 33.143529, 43.130492, 14034.861683]
+    variables = [float(var1), float(var2), float(var3), float(var3)**2]
+    variables_norm = normalize_z(variables, column_means, column_stds)
+    pred = beta[0] + beta[1] * variables_norm[0] + beta[2] * variables_norm[1] + beta[3] * variables_norm[2] + beta[4] * variables_norm[3]
+    return pred

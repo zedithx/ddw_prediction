@@ -1,12 +1,16 @@
+import datetime
+
 from app import application
 from flask import render_template, flash, redirect, url_for
-from app.forms import LoginForm, RegistrationForm, CreateQuestionForm, ChallengeAnswerForm
+from app.forms import LoginForm, RegistrationForm, CreatePredictionForm, ChallengeAnswerForm
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Question, Challenge, TimeRecord
 from werkzeug.urls import url_parse
 from app import db
 from flask import request 
-from app.serverlibrary import mergesort, EvaluateExpression, get_smallest_three 
+from app.serverlibrary import mergesort, EvaluateExpression, get_smallest_three, get_predicted_value
+from flask import request
+
 
 @application.route('/')
 @application.route('/index')
@@ -26,31 +30,26 @@ def users():
 @application.route('/questions', methods=['GET','POST'])
 @login_required
 def questions():
-	questions = current_user.questions.all()
-	form = CreateQuestionForm()
-	users = User.query.all()
-	userlist = [(u.username, u.username) for u in users]
-	form.assign_to.choices=userlist
+	questions = Question.query.all()
+	form = CreatePredictionForm()
 	if form.validate_on_submit():
-		question = Question(expression=form.expression.data)
-		evalans = EvaluateExpression(form.expression.data)
-		question.answer = evalans.evaluate()
-		question.author = current_user.id 
-		challenge = Challenge(question=question)
-		username_to = []
-		for name in form.assign_to.data:
-			username_to.append(User.query.filter_by(username=name).first())
-
-		challenge.to_user = username_to
+		time = datetime.datetime.now()
+		print(time)
+		string_expression = f"Fertiliser Index:{form.fertiliser.data}, " \
+							f"Crude Oil Price Index:{form.crude_oil.data}, " \
+							f"Industrial Inputs Price Index: {form.industrial_input.data}"
+		question = Question(expression=string_expression)
+		question.answer = round(get_predicted_value(form.fertiliser.data, form.industrial_input.data,
+											  form.crude_oil.data), 2)
+		question.time = time.strftime("%d/%m/%Y %H:%M:%S")
 		db.session.add(question)
-		db.session.add(challenge)
 		db.session.commit()
-		flash('Congratulations, you have created a new question.')
-		questions = current_user.questions.all()
+		flash('Congratulations, you have created a new prediction.')
+		questions = Question.query.all()
 		return render_template('questions.html', title='Questions', 
 							user=current_user,
 							questions=questions,
-							form=form)
+							form=form, time=time)
 	return render_template('questions.html', title='Questions', 
 							user=current_user,
 							questions=questions,
